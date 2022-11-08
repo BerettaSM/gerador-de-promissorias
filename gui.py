@@ -78,8 +78,7 @@ class GUI(ttk.Frame):
 
         data = self.get_data()
 
-        print(data)
-        print(self.error)
+        self.error = None
 
     def get_data(self):
 

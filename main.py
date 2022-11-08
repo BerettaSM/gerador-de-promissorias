@@ -2,7 +2,7 @@ from PIL import Image, ImageFont, ImageDraw
 from ttkthemes import ThemedTk
 
 from gui import GUI
-from utils import PromissoryImage
+from promissory_writing import PromissoryImage
 
 # --- CONSTANTS ---
 PRINT_FONT_COLOR = (0, 0, 0)
@@ -12,7 +12,6 @@ ENTRY_BG_COLOR = '#c0c0c0'
 # -----------------
 
 promissory_model = Image.open('model.jpg')
-title_font = ImageFont.truetype(font='Roboto-Light.ttf', size=40)
 # promissory = PromissoryImage(
 #     number='01/17',
 #     value='1.000,00',
