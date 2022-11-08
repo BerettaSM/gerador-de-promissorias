@@ -1,8 +1,7 @@
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw
 from ttkthemes import ThemedTk
 
-from gui import GUI
-from promissory_writing import PromissoryImage
+from view.gui import GUI
 
 # --- CONSTANTS ---
 PRINT_FONT_COLOR = (0, 0, 0)

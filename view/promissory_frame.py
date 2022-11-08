@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from tkcalendar import Calendar
 
-from validator import Validator
+from utilities.validator import Validator
 
 
 class PromissoryFrame(ttk.Frame):
@@ -37,7 +37,7 @@ class PromissoryFrame(ttk.Frame):
         self.quantity_entry = ttk.Entry(self.inner_frame, validate='key',
                                         validatecommand=(self.register(Validator.digit_or_null), '%P'))
 
-        value_label = ttk.Label(self.inner_frame, text=' Valor(R$): ')
+        value_label = ttk.Label(self.inner_frame, text='Valor(R$): ')
         self.value_entry = ttk.Entry(self.inner_frame, validate='key',
                                      validatecommand=(self.register(Validator.digit_or_null), '%P'))
 

@@ -2,11 +2,9 @@ from tkinter import *
 from tkinter import ttk
 from ttkthemes import ThemedTk
 
-
-from promissory_frame import PromissoryFrame
-from payee_frame import PayeeFrame
-from maker_frame import MakerFrame
-
+from view.maker_frame import MakerFrame
+from view.payee_frame import PayeeFrame
+from view.promissory_frame import PromissoryFrame
 
 MAIN_FONT = ('Arial', 16)
 
@@ -36,7 +34,7 @@ class GUI(ttk.Frame):
         self.buttons_frame = None
         self.generate_button = None
 
-        self.error = None
+        self.error = []
 
         self.create_widgets()
 
@@ -78,7 +76,9 @@ class GUI(ttk.Frame):
 
         data = self.get_data()
 
-        self.error = None
+        print(data)
+
+        self.error = []  # Remove errors
 
     def get_data(self):
 
@@ -88,7 +88,7 @@ class GUI(ttk.Frame):
 
         for val in data.values():
             if not val:
-                self.error = 'Existe um campo vazio'
+                self.error.append('Existem campos vazios')
                 break
 
         return data

@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 
-from validator import Validator
+from utilities.validator import Validator
 
 
 class PayeeFrame(ttk.Frame):
