@@ -62,7 +62,7 @@ class PromissoryFrame(ttk.Frame):
         self.quantity_entry.grid(sticky=E)
         value_label.grid(sticky=E)
         self.value_entry.grid(sticky=E)
-
+        # TODO: Style the calendar
         calendar_label.configure(font=self.font)
         self.due_date_calendar.configure(font=self.font)
 

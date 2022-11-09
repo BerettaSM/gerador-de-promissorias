@@ -1,10 +1,10 @@
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+
 from PIL import ImageFont, ImageDraw, Image
+from dateutil.relativedelta import relativedelta
 
-from utilities.formatter import Formatter
 from definitions import FONT_FILE, MODEL_FILE
-
+from utilities.utils import Formatter, NumberUtils, DateUtils
 
 FONT = ImageFont.truetype(font=FONT_FILE, size=40)
 
@@ -92,26 +92,26 @@ class PromissoryImage:
 
         # Promissory Frame
         self.number_field = WritableField(number, 560, 94)
-        formatted_value = Formatter.to_locale_currency(float(value))
+        formatted_value = NumberUtils.to_locale_currency(float(value))
         self.value = WritableField(formatted_value, 1830, 94)
 
         due_day, due_month_num, due_year = due_date.split('/')
-        due_month = Formatter.get_localized_month_name(int(due_month_num)).upper()
+        due_month = DateUtils.get_localized_month_name(int(due_month_num)).upper()
         self.due_date = WritableField(due_day, 905, 94)
         self.due_month = WritableField(due_month, 1175, 94)
         self.due_year = WritableField(due_year, 1465, 94)
 
-        due_date_in_full = Formatter.get_localized_date_in_full(due_date)
+        due_date_in_full = DateUtils.get_localized_date_in_full(due_date)
         self.due_date_in_full = WritableField(due_date_in_full, 500, 166,
                                               WritableField.ANCHOR_LB, 1487.0, 415, 241, 444.0)
         self.subject = WritableField('EI', 1090, 241)
 
-        value_in_full = Formatter.get_currency_value_in_full(float(value)).upper()
+        value_in_full = NumberUtils.get_currency_value_in_full(float(value)).upper()
         self.value_in_full = WritableField(value_in_full, 910, 400, WritableField.ANCHOR_LS,
                                            1089.0, 415, 489, 1590.0, pad_with_dashes=True)
 
         today = datetime.today()
-        curr_day, curr_month, curr_year = today.strftime(Formatter.DATE_FORMAT).split('/')
+        curr_day, curr_month, curr_year = today.strftime(DateUtils.DATE_FORMAT).split('/')
         self.emission_day = WritableField(curr_day, 1713, 633, WritableField.ANCHOR_MS)
         self.emission_month = WritableField(curr_month, 1828, 633, WritableField.ANCHOR_MS)
         self.emission_year = WritableField(curr_year, 1950, 633, WritableField.ANCHOR_MS)
@@ -139,22 +139,19 @@ class PromissoryImage:
 class PromissoryGenerator:
 
     @staticmethod
-    def generate(data):
-
+    def generate_from(data):
+        promissory_images = []
         quantity = int(data['quantity'])
         quantity = 1 if quantity < 1 else quantity
-        first_due_date = Formatter.get_date_from_string(data['due_date'])
-
+        first_due_date = DateUtils.get_date_from_string(data['due_date'])
         for n in range(quantity):
-
             due_date = first_due_date + relativedelta(months=n)
-
             promissory_model = Image.open(MODEL_FILE)
             editable_model = ImageDraw.Draw(promissory_model)
             promissory = PromissoryImage(
                 f'{n+1:02}/{quantity:02}',
                 data['value'],
-                Formatter.get_string_from_date(due_date),
+                DateUtils.get_string_from_date(due_date),
                 data['payee_name'],
                 data['payee_cpf'],
                 data['payable_in'],
@@ -163,4 +160,5 @@ class PromissoryGenerator:
                 data['maker_address']
             )
             promissory.write_on_model(editable_model)
-            promissory_model.save(f"result{n}.jpg")
+            promissory_images.append(promissory_model)
+        return promissory_images

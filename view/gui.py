@@ -1,25 +1,20 @@
-import os
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 
-from PIL import ImageDraw, Image
 from ttkthemes import ThemedTk
 
-from definitions import MODEL_FILE
 from utilities.promissory import PromissoryGenerator
 from utilities.validator import Validator
+from utilities.save_handler import SaveHandler
 from view.maker_frame import MakerFrame
 from view.payee_frame import PayeeFrame
 from view.promissory_frame import PromissoryFrame
 
 # --- CONSTANTS ---
 MAIN_FONT = ('Arial', 16)
-PRINT_FONT_COLOR = (0, 0, 0)
-UI_BG_COLOR = '#ffffff'
-UI_LABEL_FONT_COLOR = '#000000'
-ENTRY_BG_COLOR = '#c0c0c0'
-USER_DESKTOP = os.path.join(os.environ['USERPROFILE'], 'desktop')
+MAIN_COLOR = '#4EB5EA'
+OFF_COLOR = '#94CFEB'
 # -----------------
 
 
@@ -50,13 +45,14 @@ class GUI(ttk.Frame):
 
         self.warnings = []
 
-        self.create_widgets()
-
     def create_widgets(self):
 
         # Setup
+        promissory_frame_label = ttk.Label(self, text='Promissória')
         self.promissory_frame = PromissoryFrame(self, MAIN_FONT)
+        payee_frame_label = ttk.Label(self, text='Beneficiário')
         self.payee_frame = PayeeFrame(self, MAIN_FONT)
+        maker_frame_label = ttk.Label(self, text='Emitente')
         self.maker_frame = MakerFrame(self, MAIN_FONT)
 
         self.promissory_frame.create_widgets()
@@ -67,23 +63,26 @@ class GUI(ttk.Frame):
         self.generate_button = ttk.Button(self.buttons_frame, text='Gerar', command=self.proceed)
 
         # Position
-        self.promissory_frame.grid(row=0, column=0)
-        self.payee_frame.grid(row=1, column=0)
-        self.maker_frame.grid(row=2, column=0)
-        self.buttons_frame.grid(row=3, column=0)
+        promissory_frame_label.grid(row=0, column=0, sticky=W)
+        self.promissory_frame.grid(row=1, column=0)
+        payee_frame_label.grid(row=2, column=0, sticky=E)
+        self.payee_frame.grid(row=3, column=0)
+        maker_frame_label.grid(row=4, column=0, sticky=W)
+        self.maker_frame.grid(row=5, column=0)
+        self.buttons_frame.grid(row=6, column=0)
         self.generate_button.grid(row=0, column=0)
 
         # Configure
+        promissory_frame_label.configure(font=MAIN_FONT, foreground=MAIN_COLOR)
+        payee_frame_label.configure(font=MAIN_FONT, foreground=MAIN_COLOR)
+        maker_frame_label.configure(font=MAIN_FONT, foreground=MAIN_COLOR)
         self.buttons_frame.grid(sticky=N+W+S+E)
         self.buttons_frame.grid_rowconfigure(0, weight=1)
         self.buttons_frame.grid_columnconfigure(0, weight=1)
-
-        self.buttons_frame.configure(borderwidth=5, relief='groove')
-
+        self.buttons_frame.configure(borderwidth=5, relief='flat')
         self.generate_button.grid(sticky=N+W+S+E)
 
         style = ttk.Style()
-
         style.configure('TButton', font=MAIN_FONT)
 
     def check_data_for_warnings(self, data):
@@ -121,7 +120,9 @@ class GUI(ttk.Frame):
             if cancel:
                 return
 
-        PromissoryGenerator.generate(data)
+        images = PromissoryGenerator.generate_from(data)
+
+        SaveHandler.save_to_pdf(images)
 
     def get_data(self):
 

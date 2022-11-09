@@ -6,6 +6,7 @@ from view.gui import GUI
 def main():
     window = ThemedTk(theme='breeze')
     gui = GUI(window)
+    gui.create_widgets()
     window.mainloop()
 
 
