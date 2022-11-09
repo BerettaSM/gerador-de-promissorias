@@ -1,7 +1,12 @@
-from datetime import datetime as dt
-from PIL import ImageFont
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from PIL import ImageFont, ImageDraw, Image
 
-# max_len found out with PIL.ImageFont.getlength()
+from utilities.formatter import Formatter
+from definitions import FONT_FILE, MODEL_FILE
+
+
+FONT = ImageFont.truetype(font=FONT_FILE, size=40)
 
 
 class WritableField:
@@ -12,72 +17,150 @@ class WritableField:
     ANCHOR_MS = 'ms'
 
     def __init__(self,
-                 value: str,
-                 primary_x_pos: int | float,
-                 primary_y_pos: int | float,
+                 first_line_text: str,
+                 first_line_x_pos: int | float,
+                 first_line_y_pos: int | float,
                  anchor: str = ANCHOR_MB,
-                 max_len: int | float | None = None,
-                 wrap_x_pos: int | float | None = None,
-                 wrap_y_pos: int | float | None = None,
-                 wrap_max_len: int | float | None = None):
+                 first_line_max_len: int | float | None = None,
+                 second_line_x_pos: int | float | None = None,
+                 second_line_y_pos: int | float | None = None,
+                 second_line_max_len: int | float | None = None,
+                 pad_with_dashes=False):
 
-        self.value = value
-        self.x = primary_x_pos
-        self.y = primary_y_pos
+        self.first_line_text: str = first_line_text
+        self.second_line_text: str | None = None
+        self.first_line_x_pos: int | float = first_line_x_pos
+        self.first_line_y_pos: int | float = first_line_y_pos
         self.anchor = anchor
-        self.max_len = max_len
-        self.x_wrap = wrap_x_pos
-        self.y_wrap = wrap_y_pos
-        self.wrap_max_len = wrap_max_len  # TODO: Validate this somehow
+        self.first_line_max_len: int | float | None = first_line_max_len
+        self.second_line_x_pos = second_line_x_pos
+        self.second_line_y_pos = second_line_y_pos
+        self.second_line_max_len: int | float | None = second_line_max_len
         self._validate_state()
+        self._resolve_line_breaks()
+        if pad_with_dashes:
+            self._apply_dash_padding()
+
+    def _apply_dash_padding(self):
+        dash_length = FONT.getlength('  -')
+        value_len = FONT.getlength(self.first_line_text)
+        if not self.second_line_text:
+            first_line_dif = self.first_line_max_len - value_len
+            while first_line_dif > dash_length:
+                self.first_line_text += '  -'
+                first_line_dif -= dash_length
+        if self.second_line_max_len:
+            wrap_value = '' if self.second_line_text is None else self.second_line_text
+            wrap_len = FONT.getlength(wrap_value)
+            second_line_dif = self.second_line_max_len - wrap_len
+            while second_line_dif > dash_length:
+                wrap_value += '  -'
+                second_line_dif -= dash_length
+            self.second_line_text = wrap_value
+
+    def write_on_model(self, model: ImageDraw.ImageDraw):
+        xy = (self.first_line_x_pos, self.first_line_y_pos)
+        model.text(xy, str(self.first_line_text), anchor=self.anchor, font=FONT, fill='black')
+        if self.second_line_text:
+            wrap_xy = (self.second_line_x_pos, self.second_line_y_pos)
+            model.text(wrap_xy, str(self.second_line_text), anchor=self.anchor, font=FONT, fill='black')
 
     def _validate_state(self):
         required_types = (float, int)
-        if type(self.x) not in required_types or type(self.y) not in required_types:
-            raise AttributeError('X and Y positions should be numbers.')
-        if self.max_len is not None:
-            if type(self.max_len) not in required_types:
-                raise AttributeError('max_len should be a number.')
-            if type(self.y_wrap) not in required_types or type(self.x_wrap) not in required_types:
-                raise AttributeError('If max_len is provided, wrap_x_pos and wrap_y_pos should be numbers.')
+        if type(self.first_line_x_pos) not in required_types or type(self.first_line_y_pos) not in required_types:
+            raise TypeError('X and Y positions should be numbers.')
+        if self.first_line_max_len is not None:
+            if type(self.first_line_max_len) not in required_types:
+                raise TypeError('max_len should be a number.')
 
-        # TODO: Change validation to accomodate passing in only max_length and throw a warning if it exceeds max space.
+    def _resolve_line_breaks(self):
+        if self.first_line_max_len and FONT.getlength(self.first_line_text) >= self.first_line_max_len:
+            split_val = self.first_line_text.split()
+            word_idx = -1
+            while FONT.getlength(' '.join(split_val[:word_idx])) > self.first_line_max_len:
+                word_idx -= 1
+            value = ' '.join(split_val[:word_idx])
+            wrap_value = ' '.join(split_val[word_idx:])
+            self.first_line_text = value
+            self.second_line_text = wrap_value
 
 
 class PromissoryImage:
 
-    FONT = ImageFont.truetype(font='Roboto-Light.ttf', size=40)
-
-    # TODO: Sort out writing the date and value in full
-
     def __init__(self, number, value, due_date, payee_name,
                  payee_cpf, payable_in, maker_name, maker_cpf, maker_address):
 
-        today = dt.today()
-        curr_day, curr_month, curr_year = today.strftime('%d/%m/%Y')
-
         # Promissory Frame
         self.number_field = WritableField(number, 560, 94)
-        self.value = WritableField(value, 1830, 94)
-        due_day, due_month, due_year = due_date.split('/')
+        formatted_value = Formatter.to_locale_currency(float(value))
+        self.value = WritableField(formatted_value, 1830, 94)
+
+        due_day, due_month_num, due_year = due_date.split('/')
+        due_month = Formatter.get_localized_month_name(int(due_month_num)).upper()
         self.due_date = WritableField(due_day, 905, 94)
         self.due_month = WritableField(due_month, 1175, 94)
         self.due_year = WritableField(due_year, 1465, 94)
-        # TODO: Sort out date in full
-        self.due_date_in_full = WritableField(None, 500, 166, WritableField.ANCHOR_LB, 1487.0, 415, 241, 444.0)
+
+        due_date_in_full = Formatter.get_localized_date_in_full(due_date)
+        self.due_date_in_full = WritableField(due_date_in_full, 500, 166,
+                                              WritableField.ANCHOR_LB, 1487.0, 415, 241, 444.0)
         self.subject = WritableField('EI', 1090, 241)
-        # TODO: Sort out value in full
-        self.value_in_full = WritableField(None, 910, 400, WritableField.ANCHOR_LS, 1089.0, 415, 489, 1590.0)
+
+        value_in_full = Formatter.get_currency_value_in_full(float(value)).upper()
+        self.value_in_full = WritableField(value_in_full, 910, 400, WritableField.ANCHOR_LS,
+                                           1089.0, 415, 489, 1590.0, pad_with_dashes=True)
+
+        today = datetime.today()
+        curr_day, curr_month, curr_year = today.strftime(Formatter.DATE_FORMAT).split('/')
         self.emission_day = WritableField(curr_day, 1713, 633, WritableField.ANCHOR_MS)
         self.emission_month = WritableField(curr_month, 1828, 633, WritableField.ANCHOR_MS)
         self.emission_year = WritableField(curr_year, 1950, 633, WritableField.ANCHOR_MS)
 
         # Payee Frame
-        self.payee_name = WritableField(payee_name, 893, 316, max_len=906.0)
-        self.payee_cpf = WritableField(payee_cpf, 1775, 316)
-        self.payable_in = WritableField(payable_in, 1540, 562, WritableField.ANCHOR_MS, 913.0)
+        self.payee_name = WritableField(payee_name.title(), 893, 316, first_line_max_len=906.0)
+        formatted_payee_cpf = Formatter.format_cpf(payee_cpf)
+        self.payee_cpf = WritableField(formatted_payee_cpf, 1775, 316)
+        self.payable_in = WritableField(payable_in.title(), 1540, 562, WritableField.ANCHOR_MS, 913.0)
 
         # Maker Frame
-        self.maker_name = WritableField(maker_name, 995, 633, WritableField.ANCHOR_MS, 773.0)
-        self.maker_cpf = WritableField(maker_cpf, 843, 709, WritableField.ANCHOR_MS)
-        self.maker_address = WritableField(maker_address, 1363, 709, WritableField.ANCHOR_LS, 621.0, 405, 779, 662.0)
+        self.maker_name = WritableField(maker_name.title(), 995, 633, WritableField.ANCHOR_MS, 773.0)
+        formatted_maker_cpf = Formatter.format_cpf(maker_cpf)
+        self.maker_cpf = WritableField(formatted_maker_cpf, 843, 709, WritableField.ANCHOR_MS)
+        self.maker_address = WritableField(maker_address.title(), 1363, 709, WritableField.ANCHOR_LS,
+                                           621.0, 405, 779, 662.0)
+
+    def write_on_model(self, model: ImageDraw.ImageDraw):
+        for field in self.__dict__.values():
+            if type(field) == WritableField:
+                field: WritableField
+                field.write_on_model(model)
+
+
+class PromissoryGenerator:
+
+    @staticmethod
+    def generate(data):
+
+        quantity = int(data['quantity'])
+        quantity = 1 if quantity < 1 else quantity
+        first_due_date = Formatter.get_date_from_string(data['due_date'])
+
+        for n in range(quantity):
+
+            due_date = first_due_date + relativedelta(months=n)
+
+            promissory_model = Image.open(MODEL_FILE)
+            editable_model = ImageDraw.Draw(promissory_model)
+            promissory = PromissoryImage(
+                f'{n+1:02}/{quantity:02}',
+                data['value'],
+                Formatter.get_string_from_date(due_date),
+                data['payee_name'],
+                data['payee_cpf'],
+                data['payable_in'],
+                data['maker_name'],
+                data['maker_cpf'],
+                data['maker_address']
+            )
+            promissory.write_on_model(editable_model)
+            promissory_model.save(f"result{n}.jpg")

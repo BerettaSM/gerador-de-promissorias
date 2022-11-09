@@ -77,6 +77,9 @@ class PromissoryFrame(ttk.Frame):
 
         for child in self.inner_frame.winfo_children():
             child.grid(pady=5, padx=5)
+            if type(child) == ttk.Entry:
+                child: ttk.Entry
+                child.configure(justify='center')
 
     def get_data(self):
 
