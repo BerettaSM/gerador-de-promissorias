@@ -13,6 +13,10 @@ from view.maker_frame import MakerFrame
 from view.payee_frame import PayeeFrame
 from view.promissory_frame import PromissoryFrame
 
+import io
+from PIL import ImageTk, Image
+from resources.images.images_byte import ICON
+
 # --- CONSTANTS ---
 MAIN_FONT = ('Arial', 14)
 # -----------------
@@ -28,8 +32,8 @@ class GUI(ttk.Frame):
         self.master.title('Gerador de Promissórias')
         self.master.resizable(width=False, height=False)
 
-        # icon = ImageTk.PhotoImage(Image.open(io.BytesIO(ICON)))
-        # self.master.wm_iconphoto(False, icon)
+        icon = ImageTk.PhotoImage(Image.open(io.BytesIO(ICON)))
+        self.master.wm_iconphoto(False, icon)
 
         self.grid(row=0, column=0, sticky=N + W + E + S)
         self.configure(padding=30)
