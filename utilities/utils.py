@@ -91,6 +91,7 @@ class NumberUtils:
 def get_true_filepath(filepath):
     try:
         base_path = sys._MEIPASS
+        filepath = os.path.basename(filepath)
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, filepath)
