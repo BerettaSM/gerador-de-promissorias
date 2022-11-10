@@ -17,8 +17,6 @@ class PromissoryFrame(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid(sticky=N+W+S+E)
 
-        self.configure(borderwidth=5, relief='groove')
-
         self.due_date_calendar = None
 
         self.inner_frame = None
@@ -35,11 +33,11 @@ class PromissoryFrame(ttk.Frame):
 
         quantity_label = ttk.Label(self.inner_frame, text='Nº de Promissórias: ')
         self.quantity_entry = ttk.Entry(self.inner_frame, validate='key',
-                                        validatecommand=(self.register(Validator.digit_or_null), '%P'))
+                                        validatecommand=(self.register(Validator.validate_quantity), '%P'))
 
         value_label = ttk.Label(self.inner_frame, text='Valor(R$): ')
         self.value_entry = ttk.Entry(self.inner_frame, validate='key',
-                                     validatecommand=(self.register(Validator.digit_or_null), '%P'))
+                                     validatecommand=(self.register(Validator.validate_value), '%P'))
 
         # Position
         calendar_label.grid(row=0, column=0)
@@ -58,11 +56,11 @@ class PromissoryFrame(ttk.Frame):
         self.inner_frame.grid_rowconfigure(0, weight=1)
         self.inner_frame.grid_columnconfigure(0, weight=1)
 
-        quantity_label.grid(sticky=E)
-        self.quantity_entry.grid(sticky=E)
-        value_label.grid(sticky=E)
-        self.value_entry.grid(sticky=E)
-        # TODO: Style the calendar
+        quantity_label.grid(sticky=S)
+        self.quantity_entry.grid(sticky=S)
+        value_label.grid(sticky=S)
+        self.value_entry.grid(sticky=S)
+
         calendar_label.configure(font=self.font)
         self.due_date_calendar.configure(font=self.font)
 
@@ -72,14 +70,11 @@ class PromissoryFrame(ttk.Frame):
         value_label.configure(font=self.font)
         self.value_entry.configure(font=self.font)
 
-        for child in self.winfo_children():
-            child.grid(pady=5)
-
         for child in self.inner_frame.winfo_children():
-            child.grid(pady=5, padx=5)
+            child.grid(pady=5, padx=10)
             if type(child) == ttk.Entry:
                 child: ttk.Entry
-                child.configure(justify='center')
+                child.configure(justify='center', width=14)
 
     def get_data(self):
 

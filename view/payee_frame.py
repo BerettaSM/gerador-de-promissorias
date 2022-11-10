@@ -15,11 +15,8 @@ class PayeeFrame(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid(sticky=N + W + S + E)
 
-        self.configure(borderwidth=5, relief='groove')
-
         self.payee_name_entry = None
         self.payee_cpf_entry = None
-        self.payable_in_var = None
         self.payable_in_entry = None
 
     def create_widgets(self):
@@ -33,18 +30,17 @@ class PayeeFrame(ttk.Frame):
                                          validatecommand=(self.register(Validator.validate_cpf), '%P'))
 
         payable_in_label = ttk.Label(self, text='Pagável em: ')
-        self.payable_in_var = StringVar(value='Sombrio/SC')
-        self.payable_in_entry = ttk.Entry(self, textvariable=self.payable_in_var)
+        self.payable_in_entry = ttk.Entry(self)
 
         # Position
-        payee_name_label.grid(row=0, column=0, sticky=E)
-        self.payee_name_entry.grid(row=0, column=1)
+        payee_name_label.grid(row=0, column=0, sticky=E+S)
+        self.payee_name_entry.grid(row=0, column=1, sticky=S)
 
         payee_cpf_label.grid(row=1, column=0, sticky=E)
         self.payee_cpf_entry.grid(row=1, column=1)
 
-        payable_in_label.grid(row=2, column=0, sticky=E)
-        self.payable_in_entry.grid(row=2, column=1)
+        payable_in_label.grid(row=2, column=0, sticky=E+N)
+        self.payable_in_entry.grid(row=2, column=1, sticky=N)
 
         # Configure
         payee_name_label.configure(font=self.font)

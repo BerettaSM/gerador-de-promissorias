@@ -43,3 +43,11 @@ class Validator:
     @staticmethod
     def validate_cpf(value):
         return Validator.digit_or_null(value) and len(value) <= 11
+
+    @staticmethod
+    def validate_quantity(value):
+        return Validator.digit_or_null(value) and int(value) <= 2000 if value != '' else True
+
+    @staticmethod
+    def validate_value(value):
+        return Validator.digit_or_null(value) and len(value) < 9

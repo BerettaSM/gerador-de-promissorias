@@ -15,8 +15,6 @@ class MakerFrame(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid(sticky=N + W + S + E)
 
-        self.configure(borderwidth=5, relief='groove')
-
         self.maker_name_entry = None
         self.maker_cpf_entry = None
         self.maker_address_entry = None
@@ -35,14 +33,14 @@ class MakerFrame(ttk.Frame):
         self.maker_address_entry = ttk.Entry(self)
 
         # Position
-        maker_name_label.grid(row=0, column=0, sticky=E)
-        self.maker_name_entry.grid(row=0, column=1)
+        maker_name_label.grid(row=0, column=0, sticky=E+S)
+        self.maker_name_entry.grid(row=0, column=1, sticky=S)
 
         maker_cpf_label.grid(row=1, column=0, sticky=E)
         self.maker_cpf_entry.grid(row=1, column=1)
 
-        maker_address_label.grid(row=2, column=0, sticky=E)
-        self.maker_address_entry.grid(row=2, column=1)
+        maker_address_label.grid(row=2, column=0, sticky=E+N)
+        self.maker_address_entry.grid(row=2, column=1, sticky=N)
 
         # Configure
         maker_name_label.configure(font=self.font)

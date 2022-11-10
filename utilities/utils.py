@@ -11,6 +11,11 @@ class DateUtils:
     DATE_FORMAT = "%d/%m/%Y"
 
     @staticmethod
+    def get_formatted_today_string():
+        today = datetime.datetime.today()
+        return DateUtils.get_string_from_date(today)
+
+    @staticmethod
     def get_date_from_string(date_string: str):
         if type(date_string) != str:
             raise TypeError('Invalid type for date. Expected is str.')
@@ -49,13 +54,15 @@ class DateUtils:
 class Formatter:
 
     @staticmethod
-    def get_number_in_full(number):
+    def get_number_in_full(number: int):
         if type(number) != int:
             raise TypeError('Invalid type for number. Expected is int.')
         return num2words(number, lang='pt_BR')
 
     @staticmethod
     def format_cpf(cpf: str):
+        if type(cpf) != str:
+            raise TypeError('cpf should be a string.')
         if len(cpf) != 11:
             raise ValueError('cpf len should equal 11.')
         if not cpf.isdigit():
@@ -66,7 +73,7 @@ class Formatter:
 class NumberUtils:
 
     @staticmethod
-    def get_currency_value_in_full(value):
+    def get_currency_value_in_full(value: int | float):
         if type(value) not in (int, float):
             raise TypeError('Invalid type for value. Expected is int or float.')
         return num2words(value, to='currency', lang='pt_BR')

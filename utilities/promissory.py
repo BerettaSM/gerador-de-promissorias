@@ -41,6 +41,13 @@ class WritableField:
         if pad_with_dashes:
             self._apply_dash_padding()
 
+    def write_on_model(self, model: ImageDraw.ImageDraw):
+        xy = (self.first_line_x_pos, self.first_line_y_pos)
+        model.text(xy, str(self.first_line_text), anchor=self.anchor, font=FONT, fill='black')
+        if self.second_line_text:
+            wrap_xy = (self.second_line_x_pos, self.second_line_y_pos)
+            model.text(wrap_xy, str(self.second_line_text), anchor=self.anchor, font=FONT, fill='black')
+
     def _apply_dash_padding(self):
         dash_length = FONT.getlength('  -')
         value_len = FONT.getlength(self.first_line_text)
@@ -58,21 +65,6 @@ class WritableField:
                 second_line_dif -= dash_length
             self.second_line_text = wrap_value
 
-    def write_on_model(self, model: ImageDraw.ImageDraw):
-        xy = (self.first_line_x_pos, self.first_line_y_pos)
-        model.text(xy, str(self.first_line_text), anchor=self.anchor, font=FONT, fill='black')
-        if self.second_line_text:
-            wrap_xy = (self.second_line_x_pos, self.second_line_y_pos)
-            model.text(wrap_xy, str(self.second_line_text), anchor=self.anchor, font=FONT, fill='black')
-
-    def _validate_state(self):
-        required_types = (float, int)
-        if type(self.first_line_x_pos) not in required_types or type(self.first_line_y_pos) not in required_types:
-            raise TypeError('X and Y positions should be numbers.')
-        if self.first_line_max_len is not None:
-            if type(self.first_line_max_len) not in required_types:
-                raise TypeError('max_len should be a number.')
-
     def _resolve_line_breaks(self):
         if self.first_line_max_len and FONT.getlength(self.first_line_text) >= self.first_line_max_len:
             split_val = self.first_line_text.split()
@@ -83,6 +75,17 @@ class WritableField:
             wrap_value = ' '.join(split_val[word_idx:])
             self.first_line_text = value
             self.second_line_text = wrap_value
+
+    def _validate_state(self):
+        required_types = (float, int)
+        if type(self.first_line_x_pos) not in required_types or type(self.first_line_y_pos) not in required_types:
+            raise TypeError('X and Y positions should be numbers.')
+        if self.first_line_max_len is not None:
+            if type(self.first_line_max_len) not in required_types:
+                raise TypeError('first_line_max_len should be a number.')
+            if type(self.second_line_x_pos) not in required_types and \
+                    type(self.second_line_y_pos) not in required_types:
+                raise ValueError('if first_line_max_len is provided, so should second_line_x_pos and second_line_y_pos')
 
 
 class PromissoryImage:
@@ -117,13 +120,13 @@ class PromissoryImage:
         self.emission_year = WritableField(curr_year, 1950, 633, WritableField.ANCHOR_MS)
 
         # Payee Frame
-        self.payee_name = WritableField(payee_name.title(), 893, 316, first_line_max_len=906.0)
+        self.payee_name = WritableField(payee_name.title(), 893, 316)
         formatted_payee_cpf = Formatter.format_cpf(payee_cpf)
         self.payee_cpf = WritableField(formatted_payee_cpf, 1775, 316)
-        self.payable_in = WritableField(payable_in.title(), 1540, 562, WritableField.ANCHOR_MS, 913.0)
+        self.payable_in = WritableField(payable_in.title(), 1540, 562, WritableField.ANCHOR_MS)
 
         # Maker Frame
-        self.maker_name = WritableField(maker_name.title(), 995, 633, WritableField.ANCHOR_MS, 773.0)
+        self.maker_name = WritableField(maker_name.title(), 995, 633, WritableField.ANCHOR_MS)
         formatted_maker_cpf = Formatter.format_cpf(maker_cpf)
         self.maker_cpf = WritableField(formatted_maker_cpf, 843, 709, WritableField.ANCHOR_MS)
         self.maker_address = WritableField(maker_address.title(), 1363, 709, WritableField.ANCHOR_LS,
@@ -139,10 +142,13 @@ class PromissoryImage:
 class PromissoryGenerator:
 
     @staticmethod
-    def generate_from(data):
-        promissory_images = []
+    def generate_from(data, gui):
         quantity = int(data['quantity'])
-        quantity = 1 if quantity < 1 else quantity
+        if quantity < 1:
+            raise ValueError('Value "quantity" should be greater than zero.')
+        loading_bar_increment = 100 / quantity
+        loading_bar_curr_value = 0
+        promissory_images = []
         first_due_date = DateUtils.get_date_from_string(data['due_date'])
         for n in range(quantity):
             due_date = first_due_date + relativedelta(months=n)
@@ -161,4 +167,9 @@ class PromissoryGenerator:
             )
             promissory.write_on_model(editable_model)
             promissory_images.append(promissory_model)
+            loading_bar_curr_value += loading_bar_increment
+            gui.loading_bar['value'] = loading_bar_curr_value
+            gui.generate_button.configure(text=f'{loading_bar_curr_value:.2f}%')
+            gui.master.update_idletasks()
+        gui.loading_bar.stop()
         return promissory_images

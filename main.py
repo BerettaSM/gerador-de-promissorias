@@ -4,9 +4,10 @@ from view.gui import GUI
 
 
 def main():
-    window = ThemedTk(theme='breeze')
+    window = ThemedTk(theme='plastik')
     gui = GUI(window)
     gui.create_widgets()
+    gui.register_event_listeners()
     window.mainloop()
 
 
