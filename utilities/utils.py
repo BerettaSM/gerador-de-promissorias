@@ -1,3 +1,5 @@
+import os
+import sys
 import datetime
 import locale
 
@@ -84,3 +86,11 @@ class NumberUtils:
             raise TypeError('Invalid type for value. Expected is a float.')
         locale.setlocale(locale.LC_ALL, "")
         return locale.currency(value, grouping=True)
+
+
+def get_true_filepath(filepath):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, filepath)

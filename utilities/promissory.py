@@ -3,10 +3,10 @@ from datetime import datetime
 from PIL import ImageFont, ImageDraw, Image
 from dateutil.relativedelta import relativedelta
 
-from definitions import FONT_FILE, MODEL_FILE
-from utilities.utils import Formatter, NumberUtils, DateUtils
+from utilities.utils import Formatter, NumberUtils, DateUtils, get_true_filepath
 
-FONT = ImageFont.truetype(font=FONT_FILE, size=40)
+FONT = ImageFont.truetype(font='C:/windows/fonts/arial.ttf', size=40)
+MODEL_FILE = get_true_filepath('resources/images/model.jpg')
 
 
 class WritableField:
