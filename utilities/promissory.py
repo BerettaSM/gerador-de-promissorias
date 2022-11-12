@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 from utilities.utils import Formatter, NumberUtils, DateUtils, get_true_filepath
 
 FONT = ImageFont.truetype(font='C:/windows/fonts/arial.ttf', size=40)
+FONT_BOLD = ImageFont.truetype(font='C:/windows/fonts/ariblk.ttf', size=40)
 MODEL_FILE = get_true_filepath('resources/images/model.jpg')
 
 
@@ -25,7 +26,8 @@ class WritableField:
                  second_line_x_pos: int | float | None = None,
                  second_line_y_pos: int | float | None = None,
                  second_line_max_len: int | float | None = None,
-                 pad_with_dashes=False):
+                 pad_with_dashes=False,
+                 bold=False):
 
         self.first_line_text: str = first_line_text
         self.second_line_text: str | None = None
@@ -40,13 +42,15 @@ class WritableField:
         self._resolve_line_breaks()
         if pad_with_dashes:
             self._apply_dash_padding()
+        self.bold = bold
 
     def write_on_model(self, model: ImageDraw.ImageDraw):
+        font = FONT_BOLD if self.bold else FONT
         xy = (self.first_line_x_pos, self.first_line_y_pos)
-        model.text(xy, str(self.first_line_text), anchor=self.anchor, font=FONT, fill='black')
+        model.text(xy, str(self.first_line_text), anchor=self.anchor, font=font, fill='black')
         if self.second_line_text:
             wrap_xy = (self.second_line_x_pos, self.second_line_y_pos)
-            model.text(wrap_xy, str(self.second_line_text), anchor=self.anchor, font=FONT, fill='black')
+            model.text(wrap_xy, str(self.second_line_text), anchor=self.anchor, font=font, fill='black')
 
     def _apply_dash_padding(self):
         dash_length = FONT.getlength('  -')
@@ -91,12 +95,12 @@ class WritableField:
 class PromissoryImage:
 
     def __init__(self, number, value, due_date, payee_name,
-                 payee_cpf, payable_in, maker_name, maker_cpf, maker_address):
-
+                 payee_cpf_cnpj, payable_in, maker_name, maker_cpf_cnpj, maker_address):
+        _value = value.replace(',', '.')
         # Promissory Frame
         self.number_field = WritableField(number, 560, 94)
-        formatted_value = NumberUtils.to_locale_currency(float(value))
-        self.value = WritableField(formatted_value, 1830, 94)
+        formatted_value = NumberUtils.to_locale_currency(float(_value))
+        self.value = WritableField(formatted_value, 1830, 94, bold=True)
 
         due_day, due_month_num, due_year = due_date.split('/')
         due_month = DateUtils.get_localized_month_name(int(due_month_num)).upper()
@@ -107,9 +111,9 @@ class PromissoryImage:
         due_date_in_full = DateUtils.get_localized_date_in_full(due_date)
         self.due_date_in_full = WritableField(due_date_in_full, 500, 166,
                                               WritableField.ANCHOR_LB, 1487.0, 415, 241, 444.0)
-        self.subject = WritableField('EI', 1090, 241)
+        self.subject = WritableField('EI', 1100, 241)
 
-        value_in_full = NumberUtils.get_currency_value_in_full(float(value)).upper()
+        value_in_full = NumberUtils.get_currency_value_in_full(float(_value)).upper()
         self.value_in_full = WritableField(value_in_full, 910, 400, WritableField.ANCHOR_LS,
                                            1089.0, 415, 489, 1590.0, pad_with_dashes=True)
 
@@ -120,15 +124,15 @@ class PromissoryImage:
         self.emission_year = WritableField(curr_year, 1950, 633, WritableField.ANCHOR_MS)
 
         # Payee Frame
-        self.payee_name = WritableField(payee_name.title(), 893, 316)
-        formatted_payee_cpf = Formatter.format_cpf(payee_cpf)
-        self.payee_cpf = WritableField(formatted_payee_cpf, 1775, 316)
+        self.payee_name = WritableField(payee_name.title(), 880, 316)
+        formatted_payee_cpf_cnpj = Formatter.format_cpf_cnpj(payee_cpf_cnpj)
+        self.payee_cpf_cnpj = WritableField(formatted_payee_cpf_cnpj, 1775, 316)
         self.payable_in = WritableField(payable_in.title(), 1540, 562, WritableField.ANCHOR_MS)
 
         # Maker Frame
-        self.maker_name = WritableField(maker_name.title(), 995, 633, WritableField.ANCHOR_MS)
-        formatted_maker_cpf = Formatter.format_cpf(maker_cpf)
-        self.maker_cpf = WritableField(formatted_maker_cpf, 843, 709, WritableField.ANCHOR_MS)
+        self.maker_name = WritableField(maker_name.title(), 960, 633, WritableField.ANCHOR_MS)
+        formatted_maker_cpf_cnpj = Formatter.format_cpf_cnpj(maker_cpf_cnpj)
+        self.maker_cpf_cnpj = WritableField(formatted_maker_cpf_cnpj, 843, 709, WritableField.ANCHOR_MS)
         self.maker_address = WritableField(maker_address.title(), 1363, 709, WritableField.ANCHOR_LS,
                                            621.0, 405, 779, 662.0)
 
@@ -159,10 +163,10 @@ class PromissoryGenerator:
                 data['value'],
                 DateUtils.get_string_from_date(due_date),
                 data['payee_name'],
-                data['payee_cpf'],
+                data['payee_cpf_cnpj'],
                 data['payable_in'],
                 data['maker_name'],
-                data['maker_cpf'],
+                data['maker_cpf_cnpj'],
                 data['maker_address']
             )
             promissory.write_on_model(editable_model)
