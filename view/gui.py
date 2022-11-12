@@ -114,6 +114,8 @@ class GUI(ttk.Frame):
 
     def proceed(self):
 
+        self.warnings = []  # Remove errors
+
         data = self.get_data()
 
         for val in data.values():
@@ -124,6 +126,17 @@ class GUI(ttk.Frame):
         for cpf_cnpj in (data['payee_cpf_cnpj'], data['maker_cpf_cnpj']):
             if len(cpf_cnpj) not in (11, 14):
                 messagebox.showinfo('CPF/CNPJ incompleto', 'Os CPFs precisam possuir 11 digitos e CNPJs 14 digitos.')
+                return
+
+        self.check_for_warnings(data)
+
+        if self.warnings:
+            message = ''
+            for n, warning in enumerate(self.warnings):
+                message += f'{n+1} - {warning}\n'
+            message += '\nProsseguir mesmo assim?'
+            should_proceed = messagebox.askyesno('Aviso', message, icon=messagebox.QUESTION)
+            if not should_proceed:
                 return
 
         # disable button and show loading bar
@@ -144,6 +157,12 @@ class GUI(ttk.Frame):
             SaveHandler.save_pdf_from(images_list=images, file_name=file_name)
         except PermissionError:
             messagebox.showerror('PDF Aberto', f'Feche o PDF "{file_name}".')
+
+    def check_for_warnings(self, data):
+        if not Validator.is_valid_cpf_cnpj(data['payee_cpf_cnpj']):
+            self.warnings.append('O CPF/CNPJ do Beneficiário aparenta não ser válido.')
+        if not Validator.is_valid_cpf_cnpj(data['maker_cpf_cnpj']):
+            self.warnings.append('O CPF/CNPJ do Emitente aparenta não ser válido.')
 
     def get_data(self):
 
