@@ -103,6 +103,7 @@ class GUI(ttk.Frame):
         style.configure('TButton', font=MAIN_FONT, anchor=CENTER, foreground='#454545')
         style.configure('TFrame', background='lightgray')
         style.configure('TLabel', background='lightgray', foreground='#454545')
+        style.configure('TEntry', background='red')
 
         for child in self.winfo_children():
             if type(child) != ttk.Label:
@@ -111,15 +112,7 @@ class GUI(ttk.Frame):
     def register_event_listeners(self):
         self.master.bind('<Return>', lambda e: self.generate_button.invoke())
 
-    def check_data_for_warnings(self, data):
-        if not Validator.is_valid_cpf(data['payee_cpf']):
-            self.warnings.append('CPF do Beneficiário aparenta não ser válido.')
-        if not Validator.is_valid_cpf(data['maker_cpf']):
-            self.warnings.append('CPF do Emitente aparenta não ser válido.')
-
     def proceed(self):
-
-        self.warnings = []  # Remove errors
 
         data = self.get_data()
 
@@ -128,20 +121,9 @@ class GUI(ttk.Frame):
                 messagebox.showinfo('Campo vazio', 'Não deixe nenhum campo vazio.')
                 return
 
-        for cpf in (data['payee_cpf'], data['maker_cpf']):
-            if len(cpf) != 11:
-                messagebox.showinfo('CPF incompleto', 'Os CPFs precisam possuir 11 digitos.')
-                return
-
-        self.check_data_for_warnings(data)
-
-        if self.warnings:
-            warning_str = 'Avisos: \n'
-            for n, warning in enumerate(self.warnings):
-                warning_str += f'\n{n+1}) {warning}'
-            warning_str += '\n\n Prosseguir mesmo assim?'
-            cancel = not messagebox.askyesno('Aviso', warning_str)
-            if cancel:
+        for cpf_cnpj in (data['payee_cpf_cnpj'], data['maker_cpf_cnpj']):
+            if len(cpf_cnpj) not in (11, 14):
+                messagebox.showinfo('CPF/CNPJ incompleto', 'Os CPFs precisam possuir 11 digitos e CNPJs 14 digitos.')
                 return
 
         # disable button and show loading bar

@@ -31,13 +31,13 @@ class PromissoryFrame(ttk.Frame):
 
         self.inner_frame = ttk.Frame(self)
 
-        quantity_label = ttk.Label(self.inner_frame, text='Nº de Promissórias: ')
+        quantity_label = ttk.Label(self.inner_frame, text='Nº de Promissórias:')
         self.quantity_entry = ttk.Entry(self.inner_frame, validate='key',
                                         validatecommand=(self.register(Validator.validate_quantity), '%P'))
 
-        value_label = ttk.Label(self.inner_frame, text='Valor(R$): ')
+        value_label = ttk.Label(self.inner_frame, text='Valor(R$):')
         self.value_entry = ttk.Entry(self.inner_frame, validate='key',
-                                     validatecommand=(self.register(Validator.validate_value), '%P'))
+                                     validatecommand=(self.register(Validator.float_or_null), '%P'))
 
         # Position
         calendar_label.grid(row=0, column=0)
@@ -56,9 +56,9 @@ class PromissoryFrame(ttk.Frame):
         self.inner_frame.grid_rowconfigure(0, weight=1)
         self.inner_frame.grid_columnconfigure(0, weight=1)
 
-        quantity_label.grid(sticky=S)
+        quantity_label.grid(sticky=E)
         self.quantity_entry.grid(sticky=S)
-        value_label.grid(sticky=S)
+        value_label.grid(sticky=E)
         self.value_entry.grid(sticky=S)
 
         calendar_label.configure(font=self.font)

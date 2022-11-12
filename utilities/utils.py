@@ -62,14 +62,16 @@ class Formatter:
         return num2words(number, lang='pt_BR')
 
     @staticmethod
-    def format_cpf(cpf: str):
-        if type(cpf) != str:
+    def format_cpf_cnpj(cpf_cnpj: str):
+        if type(cpf_cnpj) != str:
             raise TypeError('cpf should be a string.')
-        if len(cpf) != 11:
-            raise ValueError('cpf len should equal 11.')
-        if not cpf.isdigit():
+        if not cpf_cnpj.isdigit():
             raise ValueError('cpf should be only digits.')
-        return cpf[:3] + '.' + cpf[3:6] + '.' + cpf[6:9] + '-' + cpf[9:]
+        if len(cpf_cnpj) == 11:  # CPF
+            return cpf_cnpj[:3] + '.' + cpf_cnpj[3:6] + '.' + cpf_cnpj[6:9] + '-' + cpf_cnpj[9:]
+        elif len(cpf_cnpj) == 14:  # CNPJ
+            return cpf_cnpj[:2] + '.' + cpf_cnpj[2:5] + '.' + cpf_cnpj[5:8] + '/' + cpf_cnpj[8:12] + '-' + cpf_cnpj[12:]
+        raise ValueError('cpf_cnpj arg should have len of 11 or 14.')
 
 
 class NumberUtils:
