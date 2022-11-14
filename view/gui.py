@@ -7,7 +7,7 @@ from ttkthemes import ThemedTk
 
 from utilities.promissory import PromissoryGenerator
 from utilities.save_handler import SaveHandler
-from utilities.utils import DateUtils
+from utilities.utils import DateUtils, about_messagebox
 from utilities.validator import Validator
 from view.maker_frame import MakerFrame
 from view.payee_frame import PayeeFrame
@@ -51,6 +51,17 @@ class GUI(ttk.Frame):
         self.warnings = []
 
     def create_widgets(self):
+
+        # Menu
+        my_menu = Menu(self.master)
+        self.master.config(menu=my_menu)
+        self.master.option_add('*tearOff', False)
+        file_menu = Menu(my_menu)
+        my_menu.add_cascade(label='File', menu=file_menu)
+        help_menu = Menu(my_menu)
+        my_menu.add_cascade(label='Help', menu=help_menu)
+        file_menu.add_command(label='Quit', command=self.master.quit)
+        help_menu.add_command(label='About', command=about_messagebox)
 
         # Setup
         promissory_frame_label = ttk.Label(self, text='PROMISSÓRIA')

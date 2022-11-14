@@ -1,7 +1,9 @@
-import os
-import sys
 import datetime
 import locale
+import os
+import sys
+import webbrowser
+from tkinter import messagebox
 
 from num2words import num2words
 
@@ -97,3 +99,18 @@ def get_true_filepath(filepath):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, filepath)
+
+
+def about_messagebox():
+
+    open_git = messagebox.askyesno(title='About', message="""Created by Ramon Saviato.
+
+
+Email: ramonsaviato@hotmail.com
+
+GitHub: BerettaSM
+
+View profile on GitHub?""")
+
+    if open_git:
+        webbrowser.open('https://github.com/BerettaSM')
