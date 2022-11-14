@@ -36,7 +36,7 @@ class Validator:
 
     @staticmethod
     def is_valid_cpf(cpf: str):
-        if len(cpf) != 11:
+        if len(cpf) != 11 or Validator.all_equal_digits(cpf):
             return False
         stem = cpf[:9]
         mult, res = 10, 0
@@ -55,7 +55,7 @@ class Validator:
 
     @staticmethod
     def is_valid_cnpj(cnpj: str):
-        if len(cnpj) != 14:
+        if len(cnpj) != 14 or Validator.all_equal_digits(cnpj):
             return False
         stem, res = cnpj[:12], 0
         stem_mult = (6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
@@ -76,3 +76,9 @@ class Validator:
         elif len(cpf_cnpj) == 14:
             return Validator.is_valid_cnpj(cpf_cnpj)
         return False
+
+    @staticmethod
+    def all_equal_digits(sequence):
+        s = set()
+        [s.add(char) for char in sequence]
+        return len(s) == 1
