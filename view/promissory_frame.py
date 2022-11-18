@@ -54,7 +54,7 @@ class PromissoryFrame(ttk.Frame):
 
         frequency_label = ttk.Label(self, text="Frequência")
         self.frequency_var = StringVar(value=PromissoryFrame.PERIODICITY)
-        self.frequency_listbox = Listbox(self, listvariable=self.frequency_var)
+        self.frequency_listbox = Listbox(self, listvariable=self.frequency_var, takefocus=0)
 
         # Position
         calendar_label.grid(row=0, column=0)
