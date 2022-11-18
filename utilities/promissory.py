@@ -154,8 +154,12 @@ class PromissoryGenerator:
         loading_bar_curr_value = 0
         promissory_images = []
         first_due_date = DateUtils.get_date_from_string(data['due_date'])
+        periodicity_type, periodicity_value = data['periodicity']
         for n in range(quantity):
-            due_date = first_due_date + relativedelta(months=n)
+            if periodicity_type == 'days':
+                due_date = first_due_date + relativedelta(days=n * periodicity_value)
+            else:
+                due_date = first_due_date + relativedelta(months=n * periodicity_value)
             promissory_model = Image.open(MODEL_FILE)
             editable_model = ImageDraw.Draw(promissory_model)
             promissory = PromissoryImage(
